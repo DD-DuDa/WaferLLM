@@ -29,51 +29,74 @@ param c_y_up_reduce_recv: color;
 param c_y_down_reduce_send: color;
 param c_y_down_reduce_recv: color;
 
+// Queue IDs
+const mv_down_send_oq: output_queue = @get_output_queue(2);
+const mv_down_recv_iq: input_queue = @get_input_queue(2);
+const mv_up_send_oq: output_queue = @get_output_queue(3);
+const mv_up_recv_iq: input_queue = @get_input_queue(3);
+const up_reduce_send_oq: output_queue = @get_output_queue(4);
+const up_reduce_recv_iq: input_queue = @get_input_queue(4);
+const down_reduce_send_oq: output_queue = @get_output_queue(5);
+const down_reduce_recv_iq: input_queue = @get_input_queue(5);
+const up_bd_send_oq: output_queue = @get_output_queue(6);
+const up_bd_recv_iq: input_queue = @get_input_queue(6);
+const down_bd_send_oq: output_queue = @get_output_queue(7);
+const down_bd_recv_iq: input_queue = @get_input_queue(7);
+
+
 const mv_down_send = @get_dsd(fabout_dsd, .{
     .extent = Nt,
     .fabric_color = c_down_send,
+    .output_queue = mv_down_send_oq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const mv_down_recv = @get_dsd(fabin_dsd, .{
     .extent = Nt,
     .fabric_color = c_down_recv,
+    .input_queue = mv_down_recv_iq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const mv_up_send = @get_dsd(fabout_dsd, .{
     .extent = Nt,
     .fabric_color = c_up_send,
+    .output_queue = mv_up_send_oq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const mv_up_recv = @get_dsd(fabin_dsd, .{
     .extent = Nt,
     .fabric_color = c_up_recv,
+    .input_queue = mv_up_recv_iq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const up_reduce_send = @get_dsd(fabout_dsd, .{
     .extent = Nt,
     .fabric_color = c_y_up_reduce_send,
+    .output_queue = up_reduce_send_oq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const up_reduce_recv = @get_dsd(fabin_dsd, .{
     .extent = Nt,
     .fabric_color = c_y_up_reduce_recv,
+    .input_queue = up_reduce_recv_iq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const down_reduce_send = @get_dsd(fabout_dsd, .{
     .extent = Nt,
     .fabric_color = c_y_down_reduce_send,
+    .output_queue = down_reduce_send_oq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const down_reduce_recv = @get_dsd(fabin_dsd, .{
     .extent = Nt,
     .fabric_color = c_y_down_reduce_recv,
+    .input_queue = down_reduce_recv_iq,
     .simd_mode = .{ .simd_32 = true },
 });
 
@@ -81,24 +104,28 @@ const down_reduce_recv = @get_dsd(fabin_dsd, .{
 const up_bd_send = @get_dsd(fabout_dsd, .{
     .extent = Nt,
     .fabric_color = up_bd_color,
+    .output_queue = up_bd_send_oq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const up_bd_recv = @get_dsd(fabin_dsd, .{
     .extent = Nt,
     .fabric_color = up_bd_color,
+    .input_queue = up_bd_recv_iq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const down_bd_send = @get_dsd(fabout_dsd, .{
     .extent = Nt,
     .fabric_color = down_bd_color,
+    .output_queue = down_bd_send_oq,
     .simd_mode = .{ .simd_32 = true },
 });
 
 const down_bd_recv = @get_dsd(fabin_dsd, .{
     .extent = Nt,
     .fabric_color = down_bd_color,
+    .input_queue = down_bd_recv_iq,
     .simd_mode = .{ .simd_32 = true },
 });
 
@@ -214,6 +241,17 @@ fn two_tree_allreduce_y(vector_buf_ptr: [*]f16) void {
 }
 
 comptime {
-    @block(c_down_recv);
-    @block(c_up_recv);
+    @initialize_queue(mv_down_send_oq, .{.color = c_down_send});
+    @initialize_queue(mv_down_recv_iq, .{.color = c_down_recv});
+    @initialize_queue(mv_up_send_oq, .{.color = c_up_send});
+    @initialize_queue(mv_up_recv_iq, .{.color = c_up_recv});
+    @initialize_queue(up_reduce_send_oq, .{.color = c_y_up_reduce_send});
+    @initialize_queue(up_reduce_recv_iq, .{.color = c_y_up_reduce_recv});
+    @initialize_queue(down_reduce_send_oq, .{.color = c_y_down_reduce_send});
+    @initialize_queue(down_reduce_recv_iq, .{.color = c_y_down_reduce_recv});
+    @initialize_queue(up_bd_send_oq, .{.color = up_bd_color});
+    @initialize_queue(up_bd_recv_iq, .{.color = up_bd_color});
+    @initialize_queue(down_bd_send_oq, .{.color = down_bd_color});
+    @initialize_queue(down_bd_recv_iq, .{.color = down_bd_color});
+    
 }
